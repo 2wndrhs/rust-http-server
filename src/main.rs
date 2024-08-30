@@ -1,35 +1,7 @@
-struct Server {
-    addr: String,
-}
+mod http;
+mod server;
 
-impl Server {
-    fn new(addr: String) -> Self {
-        Self { addr }
-    }
-
-    fn run(self) {
-        println!("{}", self.addr);
-    }
-}
-
-#[derive(Debug)]
-enum Method {
-    GET,
-    POST,
-    PUT,
-    DELETE,
-    HEAD,
-    CONNECT,
-    OPTIONS,
-    TRACE,
-    PATCH,
-}
-#[derive(Debug)]
-struct Request {
-    path: String,
-    query_string: Option<String>,
-    method: Method,
-}
+use server::Server;
 
 fn main() {
     let addr = String::from("127.0.0.1:8080");
@@ -38,14 +10,11 @@ fn main() {
     let server = Server::new(addr);
     server.run();
 
-    let request = Request {
-        path: String::from("/index.html"),
-        query_string: Some(String::from("?name=value")),
-        method: Method::GET,
-    };
+    let request = http::Request::new(
+        String::from("/index.html"),
+        Some(String::from("?name=value")),
+        http::Method::GET,
+    );
 
-    match request.query_string {
-        Some(query_string) => println!("{}", query_string),
-        None => println!("No query string"),
-    }
+    dbg!(request);
 }
