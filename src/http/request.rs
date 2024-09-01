@@ -1,9 +1,11 @@
 // super 키워드로 부모 모듈 참조
 use super::method::Method;
+use core::str;
 // convert 모듈에 정의된 TryFrom 트레이트
 use std::convert::TryFrom;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
+use std::str::Utf8Error;
 
 #[derive(Debug)]
 // pub 키워드로 구조체를 공개하여도 구조체의 필드는 비공개로 유지됨 -> new 연관 함수를 공개
@@ -20,7 +22,12 @@ impl TryFrom<&[u8]> for Request {
     type Error = ParseError;
 
     // GET /search?name=abc&sort=asc HTTP/1.1
-    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+    fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
+        // Result값에 ? 연산자를 사용하면 Result 값이 Err라면, Err 값이 반환됨
+        // ? 연산자는 From 트레이트에 정의되어 있는 from 함수를 호출하여
+        // ? 연산자가 받은 에러를 현재 함수의 반환 타입에 정의된 에러 타입(ParseError)으로 변환
+        let request = str::from_utf8(buf)?;
+
         todo!()
     }
 }
@@ -40,6 +47,12 @@ impl ParseError {
             Self::InvalidProtocol => "Invalid Protocol",
             Self::InvalidMethod => "Invalid Method",
         }
+    }
+}
+
+impl From<Utf8Error> for ParseError {
+    fn from(_: Utf8Error) -> Self {
+        Self::InvalidEncoding
     }
 }
 

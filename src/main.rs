@@ -9,12 +9,4 @@ fn main() {
     // -> Server 구조체 인스턴스인 server로 다시 소유권 이동
     let server = Server::new(addr);
     server.run();
-
-    let request = http::Request::new(
-        String::from("/index.html"),
-        Some(String::from("?name=value")),
-        http::Method::GET,
-    );
-
-    dbg!(request);
 }
