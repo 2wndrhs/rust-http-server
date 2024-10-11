@@ -1,5 +1,5 @@
 // super 키워드로 부모 모듈 참조
-use super::method::Method;
+use super::method::{Method, MethodError};
 use core::str;
 // convert 모듈에 정의된 TryFrom 트레이트
 use std::convert::TryFrom;
@@ -36,7 +36,9 @@ impl TryFrom<&[u8]> for Request {
             return Err(ParseError::InvalidProtocol);
         }
 
-        todo!()
+        let method: Method = method.parse()?;
+
+        unimplemented!();
     }
 }
 
@@ -71,6 +73,12 @@ impl ParseError {
 impl From<Utf8Error> for ParseError {
     fn from(_: Utf8Error) -> Self {
         Self::InvalidEncoding
+    }
+}
+
+impl From<MethodError> for ParseError {
+    fn from(_: MethodError) -> Self {
+        Self::InvalidMethod
     }
 }
 
