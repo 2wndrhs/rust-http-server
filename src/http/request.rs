@@ -8,21 +8,20 @@ use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
 use std::str::Utf8Error;
 
 #[derive(Debug)]
-// pub 키워드로 구조체를 공개하여도 구조체의 필드는 비공개로 유지됨 -> new 연관 함수를 공개
-pub struct Request {
-    path: String,
-    query_string: Option<String>,
+// Request 인스턴스는 path, query_string 참조의 라이프타임 보다 오래 살 수 없음
+pub struct Request<'buf> {
+    path: &'buf str,
+    query_string: Option<&'buf str>,
     method: Method,
 }
 
-// Request 타입에 TryFrom 트레이트 구현
 // 표준 라이브러리에서 제공하는 TryFrom 트레이트를 구현함으로써
 // 컴파일러는 TryInto<Request> for &[u8] 또한 구현한다.
-impl TryFrom<&[u8]> for Request {
+impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> {
     type Error = ParseError;
 
     // GET /search?name=abc&sort=asc HTTP/1.1
-    fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
+    fn try_from(buf: &[u8]) -> Result<Request, Self::Error> {
         // Result값에 ? 연산자를 사용하면 Result 값이 Err라면, Err 값이 반환됨
         // ? 연산자는 From 트레이트에 정의되어 있는 from 함수를 호출하여
         // ? 연산자가 받은 에러를 현재 함수의 반환 타입에 정의된 에러 타입(ParseError)으로 변환
@@ -44,7 +43,11 @@ impl TryFrom<&[u8]> for Request {
             path = &path[..i];
         }
 
-        unimplemented!();
+        Ok(Request {
+            path,
+            query_string,
+            method,
+        })
     }
 }
 
