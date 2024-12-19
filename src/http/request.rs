@@ -8,6 +8,7 @@ use std::error::Error;
 use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
 use std::str::Utf8Error;
 
+#[derive(Debug)]
 // Request 인스턴스는 path, query_string 참조의 라이프타임 보다 오래 살 수 없음
 pub struct Request<'buf> {
     path: &'buf str,
