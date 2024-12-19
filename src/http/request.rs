@@ -1,5 +1,6 @@
 // super 키워드로 부모 모듈 참조
 use super::method::{Method, MethodError};
+use super::QueryString;
 use core::str;
 // convert 모듈에 정의된 TryFrom 트레이트
 use std::convert::TryFrom;
@@ -7,11 +8,10 @@ use std::error::Error;
 use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
 use std::str::Utf8Error;
 
-#[derive(Debug)]
 // Request 인스턴스는 path, query_string 참조의 라이프타임 보다 오래 살 수 없음
 pub struct Request<'buf> {
     path: &'buf str,
-    query_string: Option<&'buf str>,
+    query_string: Option<QueryString<'buf>>,
     method: Method,
 }
 
@@ -21,7 +21,7 @@ impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> {
     type Error = ParseError;
 
     // GET /search?name=abc&sort=asc HTTP/1.1
-    fn try_from(buf: &[u8]) -> Result<Request, Self::Error> {
+    fn try_from(buf: &'buf [u8]) -> Result<Request<'buf>, Self::Error> {
         // Result값에 ? 연산자를 사용하면 Result 값이 Err라면, Err 값이 반환됨
         // ? 연산자는 From 트레이트에 정의되어 있는 from 함수를 호출하여
         // ? 연산자가 받은 에러를 현재 함수의 반환 타입에 정의된 에러 타입(ParseError)으로 변환
@@ -39,7 +39,7 @@ impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> {
 
         let mut query_string = None;
         if let Some(i) = path.find('?') {
-            query_string = Some(&path[i + 1..]);
+            query_string = Some(QueryString::from(&path[i + 1..]));
             path = &path[..i];
         }
 
