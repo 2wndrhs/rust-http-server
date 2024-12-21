@@ -1,8 +1,16 @@
 // server 모듈
-use crate::http::{Request, Response, StatusCode};
+use crate::http::{ParseError, Request, Response, StatusCode};
 use std::{convert::TryFrom, io::Read, net::TcpListener};
 pub struct Server {
     addr: String,
+}
+
+pub trait Handler {
+    fn handle_request(&mut self, request: &Request) -> Response;
+    fn handle_bad_request(&mut self, e: &ParseError) -> Response {
+        println!("Failed to parse request: {}", e);
+        Response::new(StatusCode::BadRequest, Some(e.message().to_string()))
+    }
 }
 
 impl Server {
@@ -10,7 +18,7 @@ impl Server {
         Self { addr }
     }
 
-    pub fn run(self) {
+    pub fn run(self, mut handler: impl Handler) {
         println!("Listening on {}", self.addr);
 
         // TCP 리스닝 소켓 생성 (특정 IP 주소, 포트에 바인딩)
@@ -31,20 +39,8 @@ impl Server {
                             println!("received a request: {}", String::from_utf8_lossy(&buffer));
 
                             let response = match Request::try_from(&buffer[..]) {
-                                Ok(request) => {
-                                    dbg!(request);
-                                    Response::new(
-                                        StatusCode::Ok,
-                                        Some("<h1>It works!</h1>".to_string()),
-                                    )
-                                }
-                                Err(error) => {
-                                    println!("Failed to parse request: {}", error);
-                                    Response::new(
-                                        StatusCode::BadRequest,
-                                        Some(error.message().to_string()),
-                                    )
-                                }
+                                Ok(request) => handler.handle_request(&request),
+                                Err(error) => handler.handle_bad_request(&error),
                             };
 
                             if let Err(e) = response.send(&mut stream) {
