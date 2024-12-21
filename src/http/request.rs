@@ -70,7 +70,7 @@ pub enum ParseError {
 }
 
 impl ParseError {
-    fn message(&self) -> &str {
+    pub fn message(&self) -> &str {
         match self {
             Self::InvalidRequest => "Invalid Request",
             Self::InvalidEncoding => "Invalid Encoding",
