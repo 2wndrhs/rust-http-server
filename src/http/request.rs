@@ -16,6 +16,21 @@ pub struct Request<'buf> {
     method: Method,
 }
 
+impl<'buf> Request<'buf> {
+    pub fn path(&self) -> &str {
+        &self.path
+    }
+
+    pub fn method(&self) -> &Method {
+        &self.method
+    }
+
+    pub fn query_string(&self) -> Option<&QueryString> {
+        // Option 타입의 as_ref() 메서드는 Option<T>를 Option<&T>로 변환
+        self.query_string.as_ref()
+    }
+}
+
 // 표준 라이브러리에서 제공하는 TryFrom 트레이트를 구현함으로써
 // 컴파일러는 TryInto<Request> for &[u8] 또한 구현한다.
 impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> {
