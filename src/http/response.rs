@@ -1,7 +1,4 @@
-use std::{
-    io::{Result as IoResult, Write},
-    net::TcpStream,
-};
+use std::io::{Result as IoResult, Write};
 
 use super::StatusCode;
 
